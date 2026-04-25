@@ -1,0 +1,43 @@
+# KÜB 4.8 İSTENMEYEN ETKİLER - KOMPAKT KILAVUZ
+
+## 1. GEÇERLİ FREKANS (SIKLIK) KATEGORİLERİ
+Eğer frekans belirtiliyorsa YALNIZCA aşağıdaki terimleri kullanın:
+- Çok yaygın (≥1/10)
+- Yaygın (≥1/100 ila <1/10)
+- Yaygın olmayan (≥1/1,000 ila <1/100)
+- Seyrek (≥1/10,000 ila <1/1,000)
+- Çok seyrek (<1/10,000)
+- Bilinmiyor (eldeki verilerden hareketle tahmin edilemiyor)
+
+## 2. GEÇERLİ SOC (SİSTEM ORGAN SINIFI) LİSTESİ
+Belgedeki SOC başlıklarını YALNIZCA aşağıdaki listeden seçin. Eğer metinde hiç SOC başlığı yoksa kendi bilginizle uydurmayın (null bırakın).
+- Enfeksiyonlar ve enfestasyonlar
+- (Kist ve polipler de dahil olmak üzere) iyi huylu ve kötü huylu neoplazmalar
+- Kan ve lenf sistemi hastalıkları
+- Bağışıklık sistemi hastalıkları
+- Endokrin hastalıkları
+- Metabolizma ve beslenme hastalıkları
+- Psikiyatrik hastalıkları
+- Sinir sistemi hastalıkları
+- Göz hastalıkları
+- Kulak ve iç kulak hastalıkları
+- Kardiyak hastalıkları
+- Vasküler hastalıkları
+- Solunum, göğüs bozuklukları ve mediastinal hastalıkları
+- Gastrointestinal hastalıkları
+- Hepato-bilier hastalıkları
+- Deri ve deri altı doku hastalıkları
+- Kas-iskelet bozukluklar, bağ doku ve kemik hastalıkları
+- Böbrek ve idrar hastalıkları
+- Gebelik, pueperiyum durumları ve perinatal hastalıkları
+- Konjenital ve kalıtımsal/genetik hastalıkları
+- Genel bozukluklar ve uygulama bölgesine ilişkin hastalıkları
+- Araştırmalar
+- Yaralanma ve zehirlenme
+- Cerrahi ve tıbbi prosedürler
+- Sosyal koşullar
+
+## 3. EKSTRA KURALLAR
+- İzole/bireysel vakalar/raporlar ifadelerini dikkate almayın.
+- "Gastrointestinal etkiler doz azaltılmasıyla hafifletilebilir" gibi genel, karşılaştırmalı veya açıklayıcı (prose) metinleri yan etki olarak çıkarmayın. Sadece spesifik semptomları çıkarın.
+- Özel uyarıları (Bölüm 4.4 vb.) işleme dahil etmeyin.

@@ -1,0 +1,13 @@
+# Environment variables
+.env
+
+# Python caching
+__pycache__/
+*.pyc
+
+# Test and temporary files
+temp_*.pdf
+*.pdf
+
+# Streamlit config (if any)
+.streamlit/
