@@ -14,7 +14,7 @@
 Bu proje, yapılandırılmamış ve karmaşık KÜB PDF'lerinden yapılandırılmış (Structured JSON/CSV) veri çıkarmak için sıradan bir API çağrısı yerine **LangGraph** destekli, kendi kendini düzeltebilen bir yapay zeka döngüsü kullanır.
 
 ### Nasıl Çalışır?
-1. **Extractor (Actor):** PDF'i okur, "Bölüm 2"den etken maddeyi bulur, "Bölüm 4.8"den yan etkileri çıkarır.
+1. **Extractor (Actor):** PDF'i okur, **yalnızca "Bölüm 4.8 İstenmeyen Etkiler"** bölümüne odaklanarak yan etkileri çıkarır. Eğer yan etkiler etken maddeye göre gruplanmışsa (kombinasyon ilaçlar), `active_ingredient` alanını ilgili etken maddeyle doldurur; tek etken maddeli ürünlerde bu alan `null` bırakılır.
 2. **Reviewer (Critic):** Extractor'ın ürettiği veriyi şüpheci (Adversarial) bir persona ile satır satır denetler. Kurallara uymayan bir SOC veya frekans atlaması varsa, hataları raporlayarak JSON'u reddeder.
 3. **Döngü:** Hata varsa süreç tekrar Extractor'a döner, kusursuz olana (veya maksimum iterasyon sınırına ulaşana) kadar düzeltme devam eder.
 
@@ -45,6 +45,7 @@ graph TD
 - **Adversarial Prompting (Şüpheci Kimlik):** Aynı model kullanıldığı için "Kör Nokta (Confirmation bias)" oluşmaması adına Reviewer ajanı *"Extractor tembeldir, ona asla güvenme, açık bul"* şeklinde özel bir persona ile kodlanmıştır.
 - **Chain of Thought (Sesli Düşünme):** Reviewer ajanı karara (True/False) varmadan önce Pydantic şemasındaki `audit_reasoning` alanı sayesinde zorunlu olarak sesli düşünür ve kendi mantığını test eder.
 - **Inline Binary Extraction:** PDF'lerin File API'ye yüklenirken güvenlik duvarlarında (Firewall) takılıp bağlantı (WinError 10053) koparmaması için dokümanlar doğrudan `bytes` formatında belleğe okunarak API'ye iletilir.
+- **Exponential Backoff & Retry (`tenacity`):** Geçici API hataları (rate limit, timeout) karşısında sistemi çöktürmek yerine, `tenacity` kütüphanesi ile otomatik yeniden deneme (retry) mekanizması uygulanmıştır. Her denemede bekleme süresi katlanarak artar, bu sayede kararlılık artırılmış ve manuel müdahale ihtiyacı ortadan kaldırılmıştır.
 
 ---
 
