@@ -21,6 +21,9 @@ if "workflow" not in st.session_state:
 if "final_result" not in st.session_state:
     st.session_state.final_result = None
 
+if "final_log_text" not in st.session_state:
+    st.session_state.final_log_text = None
+
 if uploaded_file is not None:
     if st.button("Çıkarımı Başlat (Agent Loop)"):
         # Save uploaded file temporarily ONLY when button is clicked
@@ -51,11 +54,26 @@ if uploaded_file is not None:
                             # Print latest logs
                             log_text = "\n".join(value["log"])
                             log_container.text_area("Ajan Konsolu", log_text, height=300)
+                            st.session_state.final_log_text = log_text
                             
                         if "extraction_result" in value:
                             st.session_state.final_result = value["extraction_result"]
                 
-                st.success("Çıkarım işlemi tamamlandı!")
+                if st.session_state.final_result:
+                    os.makedirs("results", exist_ok=True)
+                    json_filename = f"results/{uploaded_file.name}_yan_etkiler.json"
+                    data = [effect.model_dump() for effect in st.session_state.final_result.adverse_effects]
+                    with open(json_filename, "w", encoding="utf-8") as json_file:
+                        json.dump(data, json_file, ensure_ascii=False, indent=2)
+
+                if st.session_state.final_log_text:
+                    os.makedirs("audit_logs", exist_ok=True)
+                    log_filename = f"audit_logs/{uploaded_file.name}_audit.txt"
+                    with open(log_filename, "w", encoding="utf-8") as log_file:
+                        log_file.write(st.session_state.final_log_text)
+                    st.success(f"Çıkarım işlemi tamamlandı! (Sonuçlar 'results/', tartışma geçmişi 'audit_logs/' klasörüne kaydedildi.)")
+                else:
+                    st.success("Çıkarım işlemi tamamlandı!")
             finally:
                 # Always clean up the temporary file
                 if os.path.exists(temp_pdf_path):
@@ -71,7 +89,7 @@ if uploaded_file is not None:
         st.dataframe(df, use_container_width=True)
         
         # Download buttons
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             csv = df.to_csv(index=False).encode('utf-8')
             st.download_button(
@@ -90,3 +108,12 @@ if uploaded_file is not None:
                 "application/json",
                 key='download-json'
             )
+        with col3:
+            if st.session_state.final_log_text:
+                st.download_button(
+                    "Tartışma Geçmişini İndir (TXT)",
+                    st.session_state.final_log_text.encode('utf-8'),
+                    f"{uploaded_file.name}_audit_log.txt",
+                    "text/plain",
+                    key='download-txt'
+                )

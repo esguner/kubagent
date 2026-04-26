@@ -4,11 +4,20 @@ from google.genai import types
 from models import ExtractionResult, ReviewReport
 from langgraph.graph import StateGraph, START, END
 from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 load_dotenv()
 
 # Initialize Gemini Client with extended timeout (in milliseconds)
 client = genai.Client(http_options={'timeout': 600000})
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def call_gemini_with_retry(model, contents, config):
+    return client.models.generate_content(
+        model=model,
+        contents=contents,
+        config=config
+    )
 
 try:
     with open("kompakt_kilavuz.txt", "r", encoding="utf-8") as f:
@@ -19,8 +28,10 @@ except FileNotFoundError:
 EXTRACTOR_SYSTEM_PROMPT = f"""You are a strict pharmacovigilance data extraction specialist.
 
 GÖREVİN:
-1. İlacın ETKEN MADDESİNİ (active_ingredient) belgenin '2. KALİTATİF VE KANTİTATİF BİLEŞİM' bölümünden bularak çıkar (Eğer çoklu etken madde varsa aralarına virgül koyarak yaz. Örn: 'Dekstroz monohidrat, Sodyum klorür'). İlacın ticari adını (örn: %5 Dekstroz Laktatlı Ringer Solüsyonu) etken madde olarak YAZMA.
-2. YAN ETKİLERİ ise KESİNLİKLE VE YALNIZCA '4.8. İstenmeyen Etkiler' başlığı altındaki metinlerden ve tablolardan çıkar. 
+1. İlacın ETKEN MADDESİNİ (active_ingredient) SADECE '4.8. İstenmeyen Etkiler' bölümünden çıkar. 
+Eğer KÜB çoklu etken maddeli bir kombinasyon ilacıysa ve yan etkiler etken maddelere göre ayrı ayrı gruplanmışsa (Örn: "Parasetamol'e bağlı yan etkiler"), her yan etkinin yanına o spesifik etken maddeyi yaz.
+Eğer tek etken maddeli bir ürünse veya metinde yan etkiler etken maddelere göre ayrılmamışsa, bu alanı kesinlikle null bırak. İlacın genel içeriğini bulmak için başka bölümlere gitme.
+2. YAN ETKİLERİ KESİNLİKLE VE YALNIZCA '4.8. İstenmeyen Etkiler' başlığı altındaki metinlerden ve tablolardan çıkar. 
 
 ÇOK ÖNEMLİ KISITLAMA: 
 Yan etkileri ararken belgenin başka hiçbir bölümünü (örn: 4.4 Özel Uyarılar veya 4.9 Doz Aşımı) KESİNLİKLE dikkate alma! Sadece 4.8 bölümündeki semptomları çıkar.
@@ -87,7 +98,7 @@ def extractor_node(state: AgentState):
     if state.get("review_report") and not state["review_report"].is_perfect:
         prompt += f"\n\nÖnceki çıkarımda hatalar bulundu. Denetleyici Raporu:\n{state['review_report'].errors_found}\n\nLütfen bu hataları düzelterek yeniden çıkarım yap."
 
-    response = client.models.generate_content(
+    response = call_gemini_with_retry(
         model='gemini-2.5-flash',
         contents=[
             types.Part.from_bytes(data=state["pdf_bytes"], mime_type="application/pdf"),
@@ -98,7 +109,7 @@ def extractor_node(state: AgentState):
             temperature=0.0,
             response_mime_type="application/json",
             response_schema=ExtractionResult,
-        ),
+        )
     )
     
     result = response.parsed
@@ -114,7 +125,7 @@ def reviewer_node(state: AgentState):
     extraction_json = state["extraction_result"].model_dump_json(indent=2)
     prompt = f"Lütfen PDF belgesini ve aşağıdaki çıkarılmış JSON verisini incele.\n\nÇIKARILAN JSON:\n{extraction_json}"
     
-    response = client.models.generate_content(
+    response = call_gemini_with_retry(
         model='gemini-2.5-flash',
         contents=[
             types.Part.from_bytes(data=state["pdf_bytes"], mime_type="application/pdf"),
@@ -125,7 +136,7 @@ def reviewer_node(state: AgentState):
             temperature=0.0,
             response_mime_type="application/json",
             response_schema=ReviewReport,
-        ),
+        )
     )
     
     report = response.parsed

@@ -11,3 +11,7 @@ temp_*.pdf
 
 # Streamlit config (if any)
 .streamlit/
+
+# Outputs
+results/
+audit_logs/

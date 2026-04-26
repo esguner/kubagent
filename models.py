@@ -3,7 +3,7 @@ from typing import List, Optional
 
 class AdverseEffect(BaseModel):
     active_ingredient: Optional[str] = Field(
-        description="Etken madde (Tek etken maddeli ürünler için null olabilir)"
+        description="Yan etkinin ait olduğu spesifik etken madde. (Sadece kombinasyon ilaçlarında, 4.8 bölümünde yan etkiler etken maddelere göre ayrılmışsa doldurulur. Tek etken maddeli ürünlerde veya ayrım yapılmamışsa null olmalıdır.)"
     )
     soc: Optional[str] = Field(
         description="System Organ Class (SOC) adı. Metinde SOC başlığı yoksa uydurma, null yap. Sadece KÜB'de yazan MedDRA kategorilerini kullan."
